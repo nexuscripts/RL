@@ -1,1 +1,622 @@
-if game.PlaceId~=135856908115931 then return end;local a=game:GetService("Players")local b=game:GetService("RunService")local c=game:GetService("UserInputService")local d=game:GetService("Workspace")local e=game:GetService("ReplicatedStorage")if not getgenv then getgenv=function()return _G end end;getgenv().Aimbot_Enabled=getgenv().Aimbot_Enabled~=nil and getgenv().Aimbot_Enabled or false;local f=a.LocalPlayer;local g=workspace.CurrentCamera;local h=false;local i=Vector3.new(0,0,0)local j=getgenv().Aimbot_Enabled;local k=nil;local l=true;local m,n;do local o=e:FindFirstChild("Skins")if o then m=o:FindFirstChild("Guns")n=o:FindFirstChild("Knives")end end;local p=d:FindFirstChild("RunningGames")local q;local r;local s;local t=0;local u=false;local v=nil;local function w()local x=f:FindFirstChild("PlayerGui")if not x then return nil end;local y=x:FindFirstChild("Main")if not y then return nil end;local z=y:FindFirstChild("MainGameFrame")if not z then return nil end;local A=z:FindFirstChild("PlayersFrame")if not A then return nil end;if A:FindFirstChild("TeamBlueFrame")then return"TeamBlue"end;if A:FindFirstChild("TeamRedFrame")then return"TeamRed"end;return nil end;local B={"TeamBlue","TeamRed"}local function C(D)if D=="TeamBlue"then return"TeamRed"end;if D=="TeamRed"then return"TeamBlue"end end;local function E()p=p or d:FindFirstChild("RunningGames")if not p then return end;local F,G,H=nil,nil,nil;for I,J in ipairs(p:GetChildren())do local K=J:FindFirstChild("AlivePlayers")if K and K:IsA("Folder")then for I,L in ipairs(B)do local M=K:FindFirstChild(L)if M and M:FindFirstChild(f.Name)then F=J;G=K;H=L;break end end end;if F then break end end;if F and G then q=F;r=G;s=H;v=s or v;u=true;return end;if not r then for I,J in ipairs(p:GetChildren())do local K=J:FindFirstChild("AlivePlayers")if K and K:IsA("Folder")then local N=K:FindFirstChild("TeamBlue")local O=K:FindFirstChild("TeamRed")if N or O then q=J;r=K;break end end end end;if not s then s=w()or v end;if s then v=s end end;local function P(Q)if not r then return nil end;for I,L in ipairs(B)do local R=r:FindFirstChild(L)if R and R:FindFirstChild(Q.Name)then return L end end;return nil end;local function S(Q)if os.clock()-t>1.0 or not r then E()t=os.clock()end;local T=s or v or w()if not T then return false end;local U=P(Q)return U~=nil and U==C(T)end;local function V()if not r then return false end;for I,L in ipairs(B)do local R=r:FindFirstChild(L)if R and R:FindFirstChild(f.Name)then return true end end;return false end;local function W(X)local Y=f.Character;if not Y then return end;local Z=Y:FindFirstChildOfClass("Humanoid")if Z then Z.CameraOffset=X and i or Vector3.new(0,0,0)end end;f.CharacterAdded:Connect(function(Y)Y:WaitForChild("Humanoid")if j then W(true)end end)if f.Character and j then W(true)end;local _=Instance.new("ScreenGui")_.Name,_.IgnoreGuiInset,_.ResetOnSpawn="MobileReticleGui",true,false;_.ZIndexBehavior=Enum.ZIndexBehavior.Global;_.Parent=f:WaitForChild("PlayerGui")local a0=Instance.new("Frame")a0.Size,a0.AnchorPoint=UDim2.new(0,3,0,3),Vector2.new(0.5,0.5)a0.Position=UDim2.new(0.5,0,0.5,0)a0.BackgroundColor3=Color3.fromRGB(255,255,255)a0.BorderSizePixel=0;a0.Visible=false;a0.ZIndex=10;a0.Parent=_;local a1=Instance.new("UIStroke",a0)a1.Thickness=1;a1.ZIndex=11;local a2={}local function a3(a4)local a5=a2[a4]if a5 and a5.Parent then return a5 end;a5=Instance.new("Frame")a5.Size,a5.AnchorPoint=UDim2.new(0,3,0,3),Vector2.new(0.5,0.5)a5.BackgroundColor3=Color3.fromRGB(255,0,0)a5.BorderSizePixel=0;a5.Visible=false;a5.ZIndex=5;a5.Parent=_;local a6=Instance.new("UIStroke",a5)a6.Thickness=1;a6.ZIndex=6;a2[a4]=a5;return a5 end;local function a7(a4)local a5=a2[a4]if a5 then a5:Destroy()a2[a4]=nil end end;a.PlayerRemoving:Connect(function(Q)a7(Q.UserId)end)local a8,a9=150,5;local aa=0;local function ab(ac)return ac~=f and S(ac)and ac.Character and ac.Character:FindFirstChild("HumanoidRootPart")~=nil end;local function ad()local ae=f.Character and f.Character:FindFirstChild("HumanoidRootPart")if not ae then return nil end;local af=a9;local ag,ah=nil,af*af;for I,ac in ipairs(a:GetPlayers())do if ab(ac)then local ai=ac.Character.HumanoidRootPart;local aj=(ai.Position-ae.Position).Magnitude^2;if aj<ah then ag,ah=ai,aj end end end;return ag end;local function ak()local ae=f.Character and f.Character:FindFirstChild("HumanoidRootPart")if not ae then return nil end;local af=a8;local ag,ah=nil,af*af;for I,ac in ipairs(a:GetPlayers())do if ab(ac)then local ai=ac.Character.HumanoidRootPart;local aj=(ai.Position-ae.Position).Magnitude^2;if aj<ah then ag,ah=ai,aj end end end;return ag end;local function al(am)return am-g.CFrame.RightVector*aa end;local function an()if k then local am=k.Position;return CFrame.new(al(am))end;return CFrame.new(g.CFrame.Position)end;do local ao=f:GetMouse()if ao then local ap=getrawmetatable(ao)local aq=ap.__index;setreadonly(ap,false)ap.__index=function(ar,as)if j and k~=nil then if as=="Hit"then return an()elseif as=="Target"and h then return k elseif as=="X"or as=="Y"then local at=g:WorldToViewportPoint(an().Position)return as=="X"and at.X or at.Y end end;return aq(ar,as)end;setreadonly(ap,true)end end;local function au()k=nil;W(false)l=true;a0.Visible=false;a0.Position=UDim2.new(0.5,0,0.5,0)c.MouseBehavior=Enum.MouseBehavior.Default;c.MouseIconEnabled=true;for I,a5 in pairs(a2)do a5.Visible=false end end;local function av(aw)if not aw then return false end;local Y=f.Character;local ai=Y and Y:FindFirstChild("HumanoidRootPart")local ax=RaycastParams.new()ax.FilterType=Enum.RaycastFilterType.Exclude;ax.FilterDescendantsInstances={Y,aw.Parent}local function ay(az)local aA=aw.Position-az;local aB=d:Raycast(az,aA,ax)return aB==nil end;if not ay(g.CFrame.Position)then return false end;if ai and not ay(ai.Position)then return false end;return true end;local aC=0;local aD=nil;local aE=false;local aF=false;local function aG(aH)if not aH then return nil end;if aH:IsA("Tool")then return aH end;if aH:IsA("StringValue")or aH:IsA("ObjectValue")then local aI=aH.Value;if typeof(aI)=="Instance"and aI:IsA("Tool")then return aI elseif typeof(aI)=="string"then local aJ=f:FindFirstChild("Backpack")if aJ then return aJ:FindFirstChild(aI)end end end;return nil end;local function aK(aL)if not aL then return false end;if not f.Character then return false end;if aL.Parent==f.Character then return true end;aL.Parent=f.Character;return aL.Parent==f.Character end;local function aM()local Y=f.Character;if not Y then return nil end;for I,aN in ipairs(Y:GetChildren())do if aN:IsA("Tool")then return aN end end;return nil end;local function aO(aL)if not aL or not n then return false end;return n:FindFirstChild(aL.Name)~=nil end;local function aP(aL)if not(aL and aL:IsA("Tool")and m)then return false end;return m:FindFirstChild(aL.Name)~=nil end;local function aQ()if os.clock()-aC<0.25 then return end;aC=os.clock()local Y=f.Character;local aR=nil;if Y then for I,aN in ipairs(Y:GetChildren())do if aN:IsA("Tool")and aP(aN)then aR=aN;break end end end;if aR then aD=aR.Name;return end;local aS=aG(f:FindFirstChild("EquippedGun"))if aS and aP(aS)and aK(aS)then aD=aS.Name;return end;local aJ=f:FindFirstChild("Backpack")if aJ and m then for I,aT in ipairs(m:GetChildren())do local ar=aJ:FindFirstChild(aT.Name)if ar and ar:IsA("Tool")and aK(ar)then aD=ar.Name;return end end end end;local function aU(aV)if not aV then return nil end;local aW=aV:FindFirstAncestorOfClass("Model")if not aW then return nil end;local Z=aW:FindFirstChildOfClass("Humanoid")if not Z then return nil end;return a:GetPlayerFromCharacter(aW)end;local function aX()local Y=f.Character;local Z=Y and Y:FindFirstChildOfClass("Humanoid")local aY=Z and Z.Health>0;local aZ=false;if r then local D=s or v;if D then local R=r:FindFirstChild(D)aZ=R and R:FindFirstChild(f.Name)~=nil end end;return aY or aZ end;b.RenderStepped:Connect(function()if j~=getgenv().Aimbot_Enabled then j=getgenv().Aimbot_Enabled;if not j then au()end end;if os.clock()-t>1.0 then E()t=os.clock()end;if not j then k=nil;a0.Visible=false;c.MouseBehavior=Enum.MouseBehavior.Default;c.MouseIconEnabled=true;for I,a5 in pairs(a2)do a5.Visible=false end;return end;local a_=V()if a_ then u=true end;local b0=u or a_;if not b0 then k=nil;c.MouseBehavior=Enum.MouseBehavior.Default;c.MouseIconEnabled=true;for I,a5 in pairs(a2)do a5.Visible=false end;a0.Visible=true;a0.Position=UDim2.new(0.5,0,0.5,0)return end;local b1=aM()local b2=b1 and aO(b1)or false;if b2 then k=nil;aE=false;aF=false;c.MouseBehavior=Enum.MouseBehavior.Default;c.MouseIconEnabled=true;a0.Visible=false;for I,a5 in pairs(a2)do a5.Visible=false end;return end;local b3=aX()local b4=ad()or ak()k=b4;if k then l=false;c.MouseBehavior=Enum.MouseBehavior.LockCenter;c.MouseIconEnabled=false;if b3 then local at=g:WorldToViewportPoint(an().Position)a0.Visible=true;a0.Position=UDim2.new(0,at.X,0,at.Y)else a0.Visible=false end else l=true;c.MouseBehavior=Enum.MouseBehavior.Default;c.MouseIconEnabled=true;if b3 then a0.Visible=true;a0.Position=UDim2.new(0.5,0,0.5,0)else a0.Visible=false end end;for I,ac in ipairs(a:GetPlayers())do local a4=ac.UserId;local b5=a2[a4]if ab(ac)then b5=b5 or a3(a4)local ai=ac.Character.HumanoidRootPart;local b6,X=g:WorldToViewportPoint(ai.Position)if X and b6.Z>0 then b5.Visible=true;b5.Position=UDim2.new(0,b6.X,0,b6.Y)else b5.Visible=false end else if b5 then b5.Visible=false end end end;local b7=aP(b1)local b8=nil;local b9=false;if k then b8=aU(k)if b8 and S(b8)and av(k)then b9=true end end;if aF and not b7 and b9 then aE=true end;if aE and not b9 then aE=false end;aF=b7;if b9 and not aE then aQ()end end)getgenv().MobileReticle={TurnOn=function()if not j then j=true;getgenv().Aimbot_Enabled=true;l=false;W(true)end end,TurnOff=function()if j then j=false;getgenv().Aimbot_Enabled=false;au()end end,IsEnabled=function()return j end,IsOverrideActive=function()return l or j end}
+-- Aimbot
+
+if game.PlaceId == 135856908115931 then
+
+local Players           = game:GetService("Players")
+local RunService        = game:GetService("RunService")
+local UserInputService  = game:GetService("UserInputService")
+local Workspace         = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+------------------------------------------------------------
+-- GLOBAL TOGGLE STATE (persists across re-exec)
+------------------------------------------------------------
+if not getgenv then getgenv = function() return _G end end
+getgenv().Aimbot_Enabled = (getgenv().Aimbot_Enabled ~= nil) and getgenv().Aimbot_Enabled or true
+
+----------------------------------------------------------------
+-- Configuration
+----------------------------------------------------------------
+local player = Players.LocalPlayer
+local cam    = workspace.CurrentCamera
+
+local RETICLE_OVERRIDE_TARGET = false
+local CAM_OFFSET = Vector3.new(0,0,0)
+
+----------------------------------------------------------------
+-- State
+----------------------------------------------------------------
+local isEnabled          = getgenv().Aimbot_Enabled   -- controlled by button / API
+local currentTargetPart  = nil
+local centerMode         = true
+
+----------------------------------------------------------------
+-- Skins folders (for Guns / Knives classification)
+----------------------------------------------------------------
+local gunsSkinsFolder, knifeSkinsFolder do
+    local skins = ReplicatedStorage:FindFirstChild("Skins")
+    if skins then
+        gunsSkinsFolder  = skins:FindFirstChild("Guns")
+        knifeSkinsFolder = skins:FindFirstChild("Knives")
+    end
+end
+
+----------------------------------------------------------------
+-- TEAM FILTER: find my RunningGame + team; check opponents
+----------------------------------------------------------------
+local runningGamesRoot = Workspace:FindFirstChild("RunningGames")
+local currentGameFolder        -- e.g. Workspace.RunningGames.G3...
+local alivePlayersFolder       -- .AlivePlayers
+local myTeamName               -- "TeamBlue" | "TeamRed" | nil
+local lastTeamScan = 0
+
+-- track if we've actually joined a round this session
+local joinedRound = false
+
+-- survive-death team memory + GUI fallback
+local lastKnownTeamName = nil
+local function deriveTeamFromGui()
+    local pg = player:FindFirstChild("PlayerGui")
+    if not pg then return nil end
+    local main = pg:FindFirstChild("Main")
+    if not main then return nil end
+    local mgf  = main:FindFirstChild("MainGameFrame")
+    if not mgf then return nil end
+    local pf   = mgf:FindFirstChild("PlayersFrame")
+    if not pf then return nil end
+    if pf:FindFirstChild("TeamBlueFrame") then return "TeamBlue" end
+    if pf:FindFirstChild("TeamRedFrame")  then return "TeamRed"  end
+    return nil
+end
+
+local TEAMS = { "TeamBlue", "TeamRed" }
+local function otherTeam(team)
+    if team == "TeamBlue" then return "TeamRed" end
+    if team == "TeamRed" then return "TeamBlue" end
+end
+
+local function locateMyGameAndTeam()
+    runningGamesRoot = runningGamesRoot or Workspace:FindFirstChild("RunningGames")
+    if not runningGamesRoot then return end
+
+    local foundGame, foundAlive, foundTeam = nil, nil, nil
+
+    for _, gameFolder in ipairs(runningGamesRoot:GetChildren()) do
+        local alive = gameFolder:FindFirstChild("AlivePlayers")
+        if alive and alive:IsA("Folder") then
+            for _, teamName in ipairs(TEAMS) do
+                local teamFolder = alive:FindFirstChild(teamName)
+                if teamFolder and teamFolder:FindFirstChild(player.Name) then
+                    foundGame  = gameFolder
+                    foundAlive = alive
+                    foundTeam  = teamName
+                    break
+                end
+            end
+        end
+        if foundGame then break end
+    end
+
+    if foundGame and foundAlive then
+        currentGameFolder  = foundGame
+        alivePlayersFolder = foundAlive
+        myTeamName         = foundTeam
+        lastKnownTeamName  = myTeamName or lastKnownTeamName
+        joinedRound        = true
+        return
+    end
+
+    if not alivePlayersFolder then
+        for _, gameFolder in ipairs(runningGamesRoot:GetChildren()) do
+            local alive = gameFolder:FindFirstChild("AlivePlayers")
+            if alive and alive:IsA("Folder") then
+                local tb = alive:FindFirstChild("TeamBlue")
+                local tr = alive:FindFirstChild("TeamRed")
+                if tb or tr then
+                    currentGameFolder  = gameFolder
+                    alivePlayersFolder = alive
+                    break
+                end
+            end
+        end
+    end
+
+    if not myTeamName then
+        myTeamName = deriveTeamFromGui() or lastKnownTeamName
+    end
+    if myTeamName then
+        lastKnownTeamName = myTeamName
+    end
+end
+
+local function getPlayerTeamName(plr)
+    if not alivePlayersFolder then return nil end
+    for _, teamName in ipairs(TEAMS) do
+        local tf = alivePlayersFolder:FindFirstChild(teamName)
+        if tf and tf:FindFirstChild(plr.Name) then
+            return teamName
+        end
+    end
+    return nil
+end
+
+local function isOnOppositeTeam(plr)
+    if (os.clock() - lastTeamScan) > 1.0 or not alivePlayersFolder then
+        locateMyGameAndTeam()
+        lastTeamScan = os.clock()
+    end
+    local myTeam = myTeamName or lastKnownTeamName or deriveTeamFromGui()
+    if not myTeam then return false end
+    local pt = getPlayerTeamName(plr)
+    return pt ~= nil and pt == otherTeam(myTeam)
+end
+
+local function isInRoundNow()
+    if not alivePlayersFolder then return false end
+    for _, teamName in ipairs(TEAMS) do
+        local tf = alivePlayersFolder:FindFirstChild(teamName)
+        if tf and tf:FindFirstChild(player.Name) then
+            return true
+        end
+    end
+    return false
+end
+
+----------------------------------------------------------------
+-- Camera helper
+----------------------------------------------------------------
+local function setCameraAbove(on)
+    local char = player.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.CameraOffset = on and CAM_OFFSET or Vector3.new(0,0,0)
+    end
+end
+player.CharacterAdded:Connect(function(char)
+    char:WaitForChild("Humanoid")
+    if isEnabled then setCameraAbove(true) end
+end)
+if player.Character and isEnabled then setCameraAbove(true) end
+
+----------------------------------------------------------------
+-- GUI (white crosshair; red enemy dots)
+----------------------------------------------------------------
+local gui = Instance.new("ScreenGui")
+gui.Name, gui.IgnoreGuiInset, gui.ResetOnSpawn =
+    "MobileReticleGui", true, false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local cross = Instance.new("Frame")
+cross.Size, cross.AnchorPoint =
+    UDim2.new(0,3,0,3), Vector2.new(0.5,0.5)
+cross.Position          = UDim2.new(0.5,0,0.5,0)
+cross.BackgroundColor3  = Color3.fromRGB(255,255,255)
+cross.BorderSizePixel   = 0
+cross.Visible           = true
+cross.ZIndex            = 10
+cross.Parent            = gui
+local crossStroke = Instance.new("UIStroke", cross)
+crossStroke.Thickness = 1
+crossStroke.ZIndex    = 11
+
+local enemyDots = {}  -- [userId] = Frame
+local function getOrCreateEnemyDot(uid)
+    local f = enemyDots[uid]
+    if f and f.Parent then return f end
+    f = Instance.new("Frame")
+    f.Size, f.AnchorPoint = UDim2.new(0,3,0,3), Vector2.new(0.5,0.5)
+    f.BackgroundColor3    = Color3.fromRGB(255,0,0)
+    f.BorderSizePixel     = 0
+    f.Visible             = false
+    f.ZIndex              = 5
+    f.Parent              = gui
+    local s = Instance.new("UIStroke", f)
+    s.Thickness = 1
+    s.ZIndex    = 6
+    enemyDots[uid] = f
+    return f
+end
+
+local function removeEnemyDot(uid)
+    local f = enemyDots[uid]
+    if f then f:Destroy(); enemyDots[uid] = nil end
+end
+Players.PlayerRemoving:Connect(function(plr)
+    removeEnemyDot(plr.UserId)
+end)
+
+----------------------------------------------------------------
+-- Targeting helpers (opposite-team only)
+----------------------------------------------------------------
+local TRACK_RADIUS, THREAT_RADIUS = 150, 5
+local OFFSET_LEFT_STUDS = 0
+
+local function isSelectable(p)
+    return p ~= player
+       and isOnOppositeTeam(p)
+      and p.Character
+      and p.Character:FindFirstChild("HumanoidRootPart") ~= nil
+end
+
+-- close “threat” around my HRP
+local function getThreatPlayer()
+    local myHRP = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not myHRP then return nil end
+    local radius = THREAT_RADIUS
+    local best,bestD2 = nil, radius*radius
+    for _,p in ipairs(Players:GetPlayers()) do
+        if isSelectable(p) then
+            local hrp = p.Character.HumanoidRootPart
+            local d2 = (hrp.Position - myHRP.Position).Magnitude^2
+            if d2 < bestD2 then best,bestD2 = hrp,d2 end
+        end
+    end
+    return best
+end
+
+-- closest opposite-team player in WORLD space (ignores camera direction)
+local function getClosestWorldPlayer()
+    local myHRP = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not myHRP then return nil end
+    local radius = TRACK_RADIUS
+    local best, bestD2 = nil, radius*radius
+    for _,p in ipairs(Players:GetPlayers()) do
+        if isSelectable(p) then
+            local hrp = p.Character.HumanoidRootPart
+            local d2 = (hrp.Position - myHRP.Position).Magnitude^2
+            if d2 < bestD2 then
+                best, bestD2 = hrp, d2
+            end
+        end
+    end
+    return best
+end
+
+----------------------------------------------------------------
+-- Aim (no prediction)
+----------------------------------------------------------------
+local function shifted(pos)
+    return pos - cam.CFrame.RightVector*OFFSET_LEFT_STUDS
+end
+
+local function aimCFrame()
+    if currentTargetPart then
+        local pos = currentTargetPart.Position
+        return CFrame.new(shifted(pos))
+    end
+    return CFrame.new(cam.CFrame.Position)
+end
+
+----------------------------------------------------------------
+-- Mouse metatable hijack
+----------------------------------------------------------------
+do
+    local mt = getrawmetatable(player:GetMouse())
+    local old = mt.__index
+    setreadonly(mt,false)
+    mt.__index = function(t,k)
+        if isEnabled and currentTargetPart ~= nil then
+            if k=="Hit" then
+                return aimCFrame()
+            elseif k=="Target" and RETICLE_OVERRIDE_TARGET then
+                return currentTargetPart
+            elseif k=="X" or k=="Y" then
+                local sp = cam:WorldToViewportPoint(aimCFrame().Position)
+                return (k=="X") and sp.X or sp.Y
+            end
+        end
+        return old(t,k)
+    end
+    setreadonly(mt,true)
+end
+
+----------------------------------------------------------------
+-- Hard reset helper
+----------------------------------------------------------------
+local function clearAll()
+    currentTargetPart = nil
+    setCameraAbove(false)
+    centerMode = true
+    cross.Visible = true
+    cross.Position = UDim2.new(0.5,0,0.5,0)
+    UserInputService.MouseBehavior    = Enum.MouseBehavior.Default
+    UserInputService.MouseIconEnabled = true
+    for _,f in pairs(enemyDots) do f.Visible = false end
+end
+
+----------------------------------------------------------------
+-- LOS + equip helpers / gun & knife classification
+----------------------------------------------------------------
+local function isClearSight(toPart)
+    if not toPart then return false end
+
+    local char = player.Character
+    local hrp  = char and char:FindFirstChild("HumanoidRootPart")
+
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = {
+        char,
+        toPart.Parent
+    }
+
+    local function checkOrigin(origin)
+        local direction = toPart.Position - origin
+        local result = Workspace:Raycast(origin, direction, params)
+        return result == nil
+    end
+
+    if not checkOrigin(cam.CFrame.Position) then
+        return false
+    end
+
+    if hrp and not checkOrigin(hrp.Position) then
+        return false
+    end
+
+    return true
+end
+
+local lastEquipTick = 0
+local lastEquippedName = nil
+
+local suppressAutoEquip = false
+local lastHoldingGun    = false
+
+local function getToolByPathLike(obj)
+    if not obj then return nil end
+    if obj:IsA("Tool") then return obj end
+    if obj:IsA("StringValue") or obj:IsA("ObjectValue") then
+        local v = obj.Value
+        if typeof(v) == "Instance" and v:IsA("Tool") then
+            return v
+        elseif typeof(v) == "string" then
+            local bp = player:FindFirstChild("Backpack")
+            if bp then
+                return bp:FindFirstChild(v)
+            end
+        end
+    end
+    return nil
+end
+
+local function safeEquip(tool)
+    if not tool then return false end
+    if not player.Character then return false end
+    if tool.Parent == player.Character then return true end
+    tool.Parent = player.Character
+    return tool.Parent == player.Character
+end
+
+local function getHeldTool()
+    local char = player.Character
+    if not char then return nil end
+    for _,c in ipairs(char:GetChildren()) do
+        if c:IsA("Tool") then
+            return c
+        end
+    end
+    return nil
+end
+
+local function isKnifeTool(tool)
+    if not tool or not knifeSkinsFolder then return false end
+    return knifeSkinsFolder:FindFirstChild(tool.Name) ~= nil
+end
+
+local function isGun(tool)
+    if not (tool and tool:IsA("Tool") and gunsSkinsFolder) then return false end
+    return gunsSkinsFolder:FindFirstChild(tool.Name) ~= nil
+end
+
+local function equipPreferredGun()
+    if os.clock() - lastEquipTick < 0.25 then return end
+    lastEquipTick = os.clock()
+
+    local char = player.Character
+    local heldGun = nil
+    if char then
+        for _,c in ipairs(char:GetChildren()) do
+            if c:IsA("Tool") and isGun(c) then
+                heldGun = c
+                break
+            end
+        end
+    end
+
+    if heldGun then
+        lastEquippedName = heldGun.Name
+        return
+    end
+
+    local eqCandidate = getToolByPathLike(player:FindChild("EquippedGun"))
+    if eqCandidate and isGun(eqCandidate) and safeEquip(eqCandidate) then
+        lastEquippedName = eqCandidate.Name
+        return
+    end
+
+    local bp = player:FindFirstChild("Backpack")
+    if bp and gunsSkinsFolder then
+        for _, gunSkin in ipairs(gunsSkinsFolder:GetChildren()) do
+            local t = bp:FindFirstChild(gunSkin.Name)
+            if t and t:IsA("Tool") and safeEquip(t) then
+                lastEquippedName = t.Name
+                return
+            end
+        end
+    end
+end
+
+local function playerFromPart(part)
+    if not part then return nil end
+    local model = part:FindFirstAncestorOfClass("Model")
+    if not model then return nil end
+    local hum = model:FindFirstChildOfClass("Humanoid")
+    if not hum then return nil end
+    return Players:GetPlayerFromCharacter(model)
+end
+
+local function isViewerAlive()
+    local char = player.Character
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+    local aliveByHealth = hum and hum.Health > 0
+    local aliveByFolder = false
+    if alivePlayersFolder then
+        local team = myTeamName or lastKnownTeamName
+        if team then
+            local tf = alivePlayersFolder:FindFirstChild(team)
+            aliveByFolder = tf and tf:FindFirstChild(player.Name) ~= nil
+        end
+    end
+    return aliveByHealth or aliveByFolder
+end
+
+----------------------------------------------------------------
+-- MAIN RENDER LOOP
+----------------------------------------------------------------
+RunService.RenderStepped:Connect(function()
+    if (os.clock() - lastTeamScan) > 1.0 then
+        locateMyGameAndTeam()
+        lastTeamScan = os.clock()
+    end
+
+    if not isEnabled then
+        currentTargetPart = nil
+        cross.Visible = false
+        UserInputService.MouseBehavior    = Enum.MouseBehavior.Default
+        UserInputService.MouseIconEnabled = true
+        for _,f in pairs(enemyDots) do f.Visible = false end
+        return
+    end
+
+    local inRoundNow = isInRoundNow()
+    if inRoundNow then joinedRound = true end
+    local featuresActive = joinedRound or inRoundNow
+    if not featuresActive then
+        currentTargetPart = nil
+        UserInputService.MouseBehavior    = Enum.MouseBehavior.Default
+        UserInputService.MouseIconEnabled = true
+        for _,f in pairs(enemyDots) do f.Visible = false end
+        cross.Visible  = true
+        cross.Position = UDim2.new(0.5,0,0.5,0)
+        return
+    end
+
+    local heldTool = getHeldTool()
+    local knifeBlockingAimbot = heldTool and isKnifeTool(heldTool) or false
+
+    if knifeBlockingAimbot then
+        currentTargetPart = nil
+        suppressAutoEquip = false
+        lastHoldingGun    = false
+
+        UserInputService.MouseBehavior    = Enum.MouseBehavior.Default
+        UserInputService.MouseIconEnabled = true
+        cross.Visible = false
+        for _,f in pairs(enemyDots) do f.Visible = false end
+        return
+    end
+
+    local viewerAlive = isViewerAlive()
+
+    -- Targeting: threat first, then closest in world space
+    local newTarget = getThreatPlayer() or getClosestWorldPlayer()
+    currentTargetPart = newTarget
+
+    if currentTargetPart then
+        centerMode = false
+        UserInputService.MouseBehavior    = Enum.MouseBehavior.LockCenter
+        UserInputService.MouseIconEnabled = false
+
+        if viewerAlive then
+            local sp = cam:WorldToViewportPoint(aimCFrame().Position)
+            cross.Visible  = true
+            cross.Position = UDim2.new(0,sp.X,0,sp.Y)
+        else
+            cross.Visible = false
+        end
+    else
+        centerMode = true
+        UserInputService.MouseBehavior    = Enum.MouseBehavior.Default
+        UserInputService.MouseIconEnabled = true
+
+        if viewerAlive then
+            cross.Visible  = true
+            cross.Position = UDim2.new(0.5,0,0.5,0)
+        else
+            cross.Visible = false
+        end
+    end
+
+    for _,p in ipairs(Players:GetPlayers()) do
+        local uid = p.UserId
+        local dot = enemyDots[uid]
+        if isSelectable(p) then
+            dot = dot or getOrCreateEnemyDot(uid)
+            local hrp = p.Character.HumanoidRootPart
+            local vp, on = cam:WorldToViewportPoint(hrp.Position)
+            if on and vp.Z > 0 then
+                dot.Visible  = true
+                dot.Position = UDim2.new(0, vp.X, 0, vp.Y)
+            else
+                dot.Visible = false
+            end
+        else
+            if dot then dot.Visible = false end
+        end
+    end
+
+    local holdingGunNow   = isGun(heldTool)
+
+    local targetPlayer    = nil
+    local hasClearLOS     = false
+    if currentTargetPart then
+        targetPlayer = playerFromPart(currentTargetPart)
+        if targetPlayer
+            and isOnOppositeTeam(targetPlayer)
+            and isClearSight(currentTargetPart) then
+            hasClearLOS = true
+        end
+    end
+
+    if lastHoldingGun and not holdingGunNow and hasClearLOS then
+        suppressAutoEquip = true
+    end
+
+    if suppressAutoEquip and not hasClearLOS then
+        suppressAutoEquip = false
+    end
+
+    lastHoldingGun = holdingGunNow
+
+    if hasClearLOS and not suppressAutoEquip then
+        equipPreferredGun()
+    end
+end)
+
+----------------------------------------------------------------
+-- Public API
+----------------------------------------------------------------
+getgenv().MobileReticle = {
+    TurnOn  = function()
+        if not isEnabled then
+            isEnabled = true
+            getgenv().Aimbot_Enabled = true
+            centerMode = false
+            setCameraAbove(true)
+        end
+    end,
+    TurnOff = function()
+        if isEnabled then
+            isEnabled = false
+            getgenv().Aimbot_Enabled = false
+            clearAll()
+        end
+    end,
+    IsEnabled        = function() return isEnabled end,
+    IsOverrideActive = function() return centerMode or isEnabled end,
+}
+
+end
