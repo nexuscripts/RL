@@ -1,6 +1,8 @@
--- Aimbot
+-- Aimbot (Rayfield-ready, screen-center lock)
 
-if game.PlaceId == 135856908115931 then
+if game.PlaceId ~= 135856908115931 then
+    return
+end
 
 local Players           = game:GetService("Players")
 local RunService        = game:GetService("RunService")
@@ -9,10 +11,12 @@ local Workspace         = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 ------------------------------------------------------------
--- GLOBAL TOGGLE STATE (persists across re-exec)
+-- GLOBAL TOGGLE STATE (controlled by MobileReticle / Rayfield)
 ------------------------------------------------------------
 if not getgenv then getgenv = function() return _G end end
-getgenv().Aimbot_Enabled = (getgenv().Aimbot_Enabled ~= nil) and getgenv().Aimbot_Enabled or true
+
+-- Default OFF; Rayfield will turn it ON through MobileReticle
+getgenv().Aimbot_Enabled = (getgenv().Aimbot_Enabled ~= nil) and getgenv().Aimbot_Enabled or false
 
 ----------------------------------------------------------------
 -- Configuration
@@ -26,7 +30,7 @@ local CAM_OFFSET = Vector3.new(0,0,0)
 ----------------------------------------------------------------
 -- State
 ----------------------------------------------------------------
-local isEnabled          = getgenv().Aimbot_Enabled   -- controlled by button / API
+local isEnabled          = getgenv().Aimbot_Enabled
 local currentTargetPart  = nil
 local centerMode         = true
 
@@ -173,6 +177,7 @@ local function setCameraAbove(on)
         hum.CameraOffset = on and CAM_OFFSET or Vector3.new(0,0,0)
     end
 end
+
 player.CharacterAdded:Connect(function(char)
     char:WaitForChild("Humanoid")
     if isEnabled then setCameraAbove(true) end
@@ -194,7 +199,7 @@ cross.Size, cross.AnchorPoint =
 cross.Position          = UDim2.new(0.5,0,0.5,0)
 cross.BackgroundColor3  = Color3.fromRGB(255,255,255)
 cross.BorderSizePixel   = 0
-cross.Visible           = true
+cross.Visible           = false -- start hidden until enabled
 cross.ZIndex            = 10
 cross.Parent            = gui
 local crossStroke = Instance.new("UIStroke", cross)
@@ -230,7 +235,6 @@ end)
 ----------------------------------------------------------------
 -- Targeting helpers (opposite-team only)
 ----------------------------------------------------------------
-local TRACK_RADIUS, THREAT_RADIUS = 150, 5
 local OFFSET_LEFT_STUDS = 0
 
 local function isSelectable(p)
@@ -240,38 +244,34 @@ local function isSelectable(p)
       and p.Character:FindFirstChild("HumanoidRootPart") ~= nil
 end
 
--- close “threat” around my HRP
-local function getThreatPlayer()
-    local myHRP = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if not myHRP then return nil end
-    local radius = THREAT_RADIUS
-    local best,bestD2 = nil, radius*radius
-    for _,p in ipairs(Players:GetPlayers()) do
-        if isSelectable(p) then
-            local hrp = p.Character.HumanoidRootPart
-            local d2 = (hrp.Position - myHRP.Position).Magnitude^2
-            if d2 < bestD2 then best,bestD2 = hrp,d2 end
-        end
-    end
-    return best
-end
+-- ✅ NEW: closest enemy to the CENTER of the screen (original behavior)
+local function getClosestScreenPlayer()
+    if not cam then return nil end
 
--- closest opposite-team player in WORLD space (ignores camera direction)
-local function getClosestWorldPlayer()
-    local myHRP = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if not myHRP then return nil end
-    local radius = TRACK_RADIUS
-    local best, bestD2 = nil, radius*radius
-    for _,p in ipairs(Players:GetPlayers()) do
+    local viewportSize = cam.ViewportSize
+    local screenCenter = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
+
+    local bestPart = nil
+    local bestDist2 = math.huge
+
+    for _, p in ipairs(Players:GetPlayers()) do
         if isSelectable(p) then
-            local hrp = p.Character.HumanoidRootPart
-            local d2 = (hrp.Position - myHRP.Position).Magnitude^2
-            if d2 < bestD2 then
-                best, bestD2 = hrp, d2
+            local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local vp, onScreen = cam:WorldToViewportPoint(hrp.Position)
+                if onScreen and vp.Z > 0 then
+                    local pos2 = Vector2.new(vp.X, vp.Y)
+                    local d2 = (pos2 - screenCenter).Magnitude^2
+                    if d2 < bestDist2 then
+                        bestDist2 = d2
+                        bestPart = hrp
+                    end
+                end
             end
         end
     end
-    return best
+
+    return bestPart
 end
 
 ----------------------------------------------------------------
@@ -293,23 +293,26 @@ end
 -- Mouse metatable hijack
 ----------------------------------------------------------------
 do
-    local mt = getrawmetatable(player:GetMouse())
-    local old = mt.__index
-    setreadonly(mt,false)
-    mt.__index = function(t,k)
-        if isEnabled and currentTargetPart ~= nil then
-            if k=="Hit" then
-                return aimCFrame()
-            elseif k=="Target" and RETICLE_OVERRIDE_TARGET then
-                return currentTargetPart
-            elseif k=="X" or k=="Y" then
-                local sp = cam:WorldToViewportPoint(aimCFrame().Position)
-                return (k=="X") and sp.X or sp.Y
+    local mouse = player:GetMouse()
+    if mouse then
+        local mt = getrawmetatable(mouse)
+        local old = mt.__index
+        setreadonly(mt,false)
+        mt.__index = function(t,k)
+            if isEnabled and currentTargetPart ~= nil then
+                if k=="Hit" then
+                    return aimCFrame()
+                elseif k=="Target" and RETICLE_OVERRIDE_TARGET then
+                    return currentTargetPart
+                elseif k=="X" or k=="Y" then
+                    local sp = cam:WorldToViewportPoint(aimCFrame().Position)
+                    return (k=="X") and sp.X or sp.Y
+                end
             end
+            return old(t,k)
         end
-        return old(t,k)
+        setreadonly(mt,true)
     end
-    setreadonly(mt,true)
 end
 
 ----------------------------------------------------------------
@@ -319,7 +322,7 @@ local function clearAll()
     currentTargetPart = nil
     setCameraAbove(false)
     centerMode = true
-    cross.Visible = true
+    cross.Visible = false
     cross.Position = UDim2.new(0.5,0,0.5,0)
     UserInputService.MouseBehavior    = Enum.MouseBehavior.Default
     UserInputService.MouseIconEnabled = true
@@ -477,6 +480,14 @@ end
 -- MAIN RENDER LOOP
 ----------------------------------------------------------------
 RunService.RenderStepped:Connect(function()
+    -- sync local state to global (Rayfield may have changed it)
+    if isEnabled ~= getgenv().Aimbot_Enabled then
+        isEnabled = getgenv().Aimbot_Enabled
+        if not isEnabled then
+            clearAll()
+        end
+    end
+
     if (os.clock() - lastTeamScan) > 1.0 then
         locateMyGameAndTeam()
         lastTeamScan = os.clock()
@@ -521,8 +532,8 @@ RunService.RenderStepped:Connect(function()
 
     local viewerAlive = isViewerAlive()
 
-    -- Targeting: threat first, then closest in world space
-    local newTarget = getThreatPlayer() or getClosestWorldPlayer()
+    -- ✅ Screen-center targeting: choose enemy closest to the middle of the screen
+    local newTarget = getClosestScreenPlayer()
     currentTargetPart = newTarget
 
     if currentTargetPart then
@@ -550,6 +561,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
+    -- enemy red dots (ESP-style)
     for _,p in ipairs(Players:GetPlayers()) do
         local uid = p.UserId
         local dot = enemyDots[uid]
@@ -597,7 +609,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 ----------------------------------------------------------------
--- Public API
+-- Public API for Rayfield
 ----------------------------------------------------------------
 getgenv().MobileReticle = {
     TurnOn  = function()
@@ -618,5 +630,3 @@ getgenv().MobileReticle = {
     IsEnabled        = function() return isEnabled end,
     IsOverrideActive = function() return centerMode or isEnabled end,
 }
-
-end
